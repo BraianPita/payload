@@ -11,6 +11,7 @@ export const LivePreviewView: EditViewComponent = async (props) => {
 
   const {
     collectionConfig,
+    docID,
     globalConfig,
     locale,
     req: {
@@ -22,8 +23,13 @@ export const LivePreviewView: EditViewComponent = async (props) => {
     } = {},
   } = initPageResult
 
-  // TODO(JAKE): not sure what `data` is or what it should be
-  const data = 'data' in props ? props.data : {}
+  const data = await initPageResult.req.payload.findByID({
+    id: docID,
+    collection: collectionConfig.slug,
+    depth: 0,
+    draft: true,
+    fallbackLocale: null,
+  })
 
   let livePreviewConfig: LivePreviewConfig = topLevelLivePreviewConfig
 
@@ -54,8 +60,9 @@ export const LivePreviewView: EditViewComponent = async (props) => {
   const url =
     typeof livePreviewConfig?.url === 'function'
       ? await livePreviewConfig.url({
+          collectionConfig,
           data,
-          documentInfo: {}, // TODO: recreate this object server-side, see `useDocumentInfo`
+          globalConfig,
           locale,
         })
       : livePreviewConfig?.url
